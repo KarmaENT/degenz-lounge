@@ -1,0 +1,21 @@
+{
+    "name": "DeGeNz Lounge",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-azuretools.vscode-docker",
+        "ms-kubernetes-tools.vscode-kubernetes-tools"
+    ],
+    "forwardPorts": [3000, 8000],
+    "postCreateCommand": "bash ./.devcontainer/setup-codespace.sh",
+    "remoteUser": "vscode"
+}

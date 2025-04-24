@@ -1,0 +1,231 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: degenz-lounge-frontend
+  labels:
+    app: degenz-lounge
+    tier: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: degenz-lounge
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: degenz-lounge
+        tier: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: gcr.io/degenz-lounge/frontend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: degenz-lounge-config
+              key: api_url
+        - name: NEXT_PUBLIC_SOCKET_URL
+          valueFrom:
+            configMapKeyRef:
+              name: degenz-lounge-config
+              key: socket_url
+        - name: NEXT_PUBLIC_SUPABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: degenz-lounge-config
+              key: supabase_url
+        - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: supabase_anon_key
+        - name: NEXT_PUBLIC_STRIPE_PUBLIC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: stripe_public_key
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: degenz-lounge-backend
+  labels:
+    app: degenz-lounge
+    tier: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: degenz-lounge
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: degenz-lounge
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/degenz-lounge/backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: database_url
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: redis_url
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: jwt_secret
+        - name: SUPABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: degenz-lounge-config
+              key: supabase_url
+        - name: SUPABASE_SERVICE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: supabase_service_key
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: stripe_secret_key
+        - name: STRIPE_WEBHOOK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: stripe_webhook_secret
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: degenz-lounge-secrets
+              key: gemini_api_key
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "0.5"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: degenz-lounge-frontend-service
+  labels:
+    app: degenz-lounge
+    tier: frontend
+spec:
+  selector:
+    app: degenz-lounge
+    tier: frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: degenz-lounge-backend-service
+  labels:
+    app: degenz-lounge
+    tier: backend
+spec:
+  selector:
+    app: degenz-lounge
+    tier: backend
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: degenz-lounge-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - degenz-lounge.com
+    - api.degenz-lounge.com
+    secretName: degenz-lounge-tls
+  rules:
+  - host: degenz-lounge.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: degenz-lounge-frontend-service
+            port:
+              number: 80
+  - host: api.degenz-lounge.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: degenz-lounge-backend-service
+            port:
+              number: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: degenz-lounge-config
+data:
+  api_url: "https://api.degenz-lounge.com"
+  socket_url: "https://api.degenz-lounge.com"
+  supabase_url: "https://your-supabase-project.supabase.co"
