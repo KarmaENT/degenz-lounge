@@ -1,7 +1,18 @@
 .env
+.env.save
+.env*
+*.env
+*.api
+.api*
+*.api_keys
+.api_keys*
 .api
 .api_keys
 env
+*env
+env*
+api*
+*api
 api
 api_keys
 
