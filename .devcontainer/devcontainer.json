@@ -1,5 +1,5 @@
 {
-  "name": "DegenZ Lounge Dev",
+  "name": "DegenZ Lounge Dev (with SSH)",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
@@ -10,7 +10,7 @@
     "TZ": "UTC"
   },
 
-  // Essential extensions for daily development
+  // Essential extensions
   "extensions": [
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
@@ -19,16 +19,38 @@
     "GitHub.copilot"
   ],
 
-  // Ports for development access
+  // Port forwarding (including SSH)
   "forwardPorts": [
     3000,  // Next.js
-    5555   // Prisma Studio
+    5555,  // Prisma Studio
+    2222   // SSH
   ],
 
-  // Project setup commands
+  // Features including SSH
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18",
+      "packageManager": "npm"
+    },
+    "ghcr.io/devcontainers-contrib/features/prisma:2": {},
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest",
+      "startServer": true
+    }
+  },
+
+  // Project setup
   "postCreateCommand": "npm ci && npx prisma generate",
 
-  // Optimized dev settings
+  // Development environment variables
+  "remoteEnv": {
+    "DATABASE_URL": "postgresql://postgres:postgres@db:5432/degenez-dev?schema=public",
+    "NEXTAUTH_URL": "http://localhost:3000",
+    "NEXTAUTH_SECRET": "dev-secret-123",
+    "DEBUG": "degenez:*"
+  },
+
+  // VS Code settings
   "settings": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
@@ -39,28 +61,21 @@
     "eslint.packageManager": "npm",
     "tailwindCSS.includeLanguages": {
       "typescript": "typescriptreact"
+    },
+    "remote.SSH.remotePlatform": {
+      "your-codespace-name": "linux"
     }
   },
 
-  // Minimal required features
-  "features": {
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "18",
-      "packageManager": "npm"
+  // GitHub Codespaces specific settings
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md"]
     },
-    "ghcr.io/devcontainers-contrib/features/prisma:2": {}
-  },
-"features": {
-    "ghcr.io/devcontainers/features/sshd:1": {
-        "version": "latest",
-        "startServer": true
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
     }
-}
-  // Development environment variables
-  "remoteEnv": {
-    "DATABASE_URL": "postgresql://postgres:postgres@db:5432/degenez-dev?schema=public",
-    "NEXTAUTH_URL": "http://localhost:3000",
-    "NEXTAUTH_SECRET": "dev-secret-123",
-    "DEBUG": "degenez:*"
   }
 }
