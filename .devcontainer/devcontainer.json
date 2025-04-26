@@ -50,7 +50,12 @@
     },
     "ghcr.io/devcontainers-contrib/features/prisma:2": {}
   },
-
+"features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+        "version": "latest",
+        "startServer": true
+    }
+}
   // Development environment variables
   "remoteEnv": {
     "DATABASE_URL": "postgresql://postgres:postgres@db:5432/degenez-dev?schema=public",
