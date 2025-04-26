@@ -18,6 +18,11 @@ COPY --from=development /workspace/public ./public
 COPY --from=development /workspace/package.json .
 COPY --from=development /workspace/prisma ./prisma
 
+# Copy and run setup script
+COPY setup.sh /tmp/
+RUN chmod +x /tmp/setup.sh && /tmp/setup.sh
+
+
 RUN apt-get update && apt-get install -y openssl \
     && rm -rf /var/lib/apt/lists/* \
     && npm prune --production
@@ -25,3 +30,8 @@ RUN apt-get update && apt-get install -y openssl \
 USER node
 EXPOSE 3000
 CMD ["npm", "start"]
+
+
+FROM alpine:3.18
+
+
