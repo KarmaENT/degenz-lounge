@@ -34,6 +34,7 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PAYPAL_API_KEY=${PAYPAL_API_KEY}
     depends_on:
       - postgres
       - redis
