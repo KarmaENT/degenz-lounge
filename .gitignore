@@ -16,3 +16,7 @@ api*
 api
 api_keys
 
+.env.local
+.env.production
+.env.staging
+.env.dev
