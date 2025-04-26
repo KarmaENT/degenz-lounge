@@ -1,57 +1,30 @@
-# Stage 1: Builder
-FROM ubuntu:22.04 AS builder
-
-# Install system dependencies with cleanup
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    git \
-    build-essential \
-    python3 \
-    python3-pip \
-    nodejs \
-    npm \
-    && npm install -g pnpm \
-    && rm -rf /var/lib/apt/lists/*
-
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# Install dependencies first (cached layer)
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+COPY package.json package-lock.json* yarn.lock* ./
+RUN npm ci
 
-# Copy and build application
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm run build
 
-# Stage 2: Production
-FROM ubuntu:22.04
+RUN npm run build
 
-# Install runtime dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
+# Stage 3: Runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Copy built assets from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.next ./.next
+ENV NODE_ENV=production
+
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json .
-
-# Security hardening
-RUN groupadd -r appuser && \
-    useradd -r -g appuser appuser && \
-    chown -R appuser:appuser /app
-
-USER appuser
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost:3000 || exit 1
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
+
 CMD ["npm", "start"]

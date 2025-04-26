@@ -1,33 +1,74 @@
 version: '3.8'
 
 services:
-  app:
+  frontend:
     build:
-      context: .
-      dockerfile: .devcontainer/Dockerfile
-      target: development
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - ..:/workspace
-      - /workspace/node_modules
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-      - "5555:5555"
-    depends_on:
-      db:
-        condition: service_healthy
-
-  db:
-    image: postgres:15
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: degenez-dev
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_SOCKET_URL=http://backend:8000
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_STRIPE_PUBLIC_KEY=${STRIPE_PUBLIC_KEY}
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - degenz-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/degenz_lounge
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - JWT_SECRET=${JWT_SECRET}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - degenz-network
+
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=degenz_lounge
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - degenz-network
+
+  redis:
+    image: redis:6
+    ports:
+      - "6379:6379"
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - degenz-network
+
+networks:
+  degenz-network:
+    driver: bridge
 
 volumes:
-  postgres_data:
+  postgres-data:
+  redis-data:
