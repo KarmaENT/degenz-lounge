@@ -1,0 +1,115 @@
+{
+  "name": "DegenZ Lounge Development Environment",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  
+  // Custom container settings
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "DEBUG": "degenez-lounge:*",
+    "TZ": "America/New_York"
+  },
+
+  // VS Code extensions
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "streetsidesoftware.code-spell-checker",
+    "eamodio.gitlens",
+    "graphql.vscode-graphql",
+    "prisma.prisma",
+    "bradlc.vscode-tailwindcss",
+    "usernamehw.errorlens",
+    "wix.vscode-import-cost",
+    "GitHub.copilot",
+    "GitHub.vscode-pull-request-github"
+  ],
+
+  // Port forwarding
+  "forwardPorts": [
+    3000, // Next.js
+    5555, // Prisma Studio
+    9229  // Node.js debug
+  ],
+
+  // Post-create commands
+  "postCreateCommand": "npm install && npm run prisma:generate && npm run build",
+
+  // Remote user settings
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "tailwindCSS.includeLanguages": {
+      "javascript": "javascriptreact",
+      "typescript": "typescriptreact"
+    },
+    "debug.javascript.terminalOptions": {
+      "cwd": "${workspaceFolder}"
+    }
+  },
+
+  // Features to install
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18",
+      "nodePackage": "yarn"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers-contrib/features/prisma:2": {}
+  },
+
+  // Remote environment variables
+  "remoteEnv": {
+    "DATABASE_URL": "postgresql://postgres:postgres@db:5432/degenez?schema=public",
+    "NEXTAUTH_URL": "http://localhost:3000",
+    "NEXTAUTH_SECRET": "your-secret-key-here",
+    "GITHUB_CLIENT_ID": "",
+    "GITHUB_CLIENT_SECRET": "",
+    "DISCORD_CLIENT_ID": "",
+    "DISCORD_CLIENT_SECRET": ""
+  },
+
+  // Lifecycle scripts
+  "initializeCommand": "git config --global core.autocrlf input",
+  "onCreateCommand": "echo 'Container is being created...'",
+  "updateContentCommand": "npm install",
+
+  // Customizations for the project
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
+          "zsh": {
+            "path": "zsh"
+          }
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  // Host requirements
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  // Wait for specific conditions
+  "waitFor": "onCreateCommand"
+}

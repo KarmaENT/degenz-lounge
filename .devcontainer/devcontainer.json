@@ -1,0 +1,61 @@
+{
+  "name": "DegenZ Lounge Dev",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  // Core container setup
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "TZ": "UTC"
+  },
+
+  // Essential extensions for daily development
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "prisma.prisma",
+    "bradlc.vscode-tailwindcss",
+    "GitHub.copilot"
+  ],
+
+  // Ports for development access
+  "forwardPorts": [
+    3000,  // Next.js
+    5555   // Prisma Studio
+  ],
+
+  // Project setup commands
+  "postCreateCommand": "npm ci && npx prisma generate",
+
+  // Optimized dev settings
+  "settings": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "eslint.packageManager": "npm",
+    "tailwindCSS.includeLanguages": {
+      "typescript": "typescriptreact"
+    }
+  },
+
+  // Minimal required features
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18",
+      "packageManager": "npm"
+    },
+    "ghcr.io/devcontainers-contrib/features/prisma:2": {}
+  },
+
+  // Development environment variables
+  "remoteEnv": {
+    "DATABASE_URL": "postgresql://postgres:postgres@db:5432/degenez-dev?schema=public",
+    "NEXTAUTH_URL": "http://localhost:3000",
+    "NEXTAUTH_SECRET": "dev-secret-123",
+    "DEBUG": "degenez:*"
+  }
+}
