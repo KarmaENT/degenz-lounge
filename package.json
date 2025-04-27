@@ -1,0 +1,24 @@
+{
+  "name": "degenz-lounge",
+  "version": "1.0.0",
+  "description": "## AI Agent Builder & Library",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.4.1",
+    "next": "^15.3.1",
+    "next.js": "^1.0.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "supabase": "^2.22.6",
+    "vite": "^6.3.3"
+  }
+}

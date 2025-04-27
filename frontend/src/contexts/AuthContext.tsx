@@ -1,5 +1,6 @@
+import { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase, signIn as supabaseSignIn, signUp as supabaseSignUp, signOut as supabaseSignOut, getCurrentUser, getUserProfile } from './supabase';
+import { supabase, signIn as supabaseSignIn, signUp as supabaseSignUp, signOut as supabaseSignOut, getCurrentUser, getUserProfile } from '@/lib/supabase';
 
 // Types
 type User = {
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Set up auth state listener
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
         if (event === 'SIGNED_IN' && session?.user) {
           try {
             // Get user profile from Supabase
