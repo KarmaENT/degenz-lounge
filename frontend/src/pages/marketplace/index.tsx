@@ -1,5 +1,6 @@
+
+
 import { useState, useEffect } from 'react';
-import { useListings } from '@/hooks/useListings';
 import { ListingCard } from '@/components/ListingCard';
 import { TagFilter } from '@/components/TagFilter';
 import type { Listing } from '@/types';

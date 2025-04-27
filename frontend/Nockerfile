@@ -7,6 +7,8 @@ RUN apk add --no-cache libc6-compat
 
 # Copy package files
 COPY package.json package-lock.json ./
+# In both deps and builder stages
+COPY src/hooks/ ./src/hooks/
 
 # Install all dependencies
 RUN npm ci && \
@@ -35,7 +37,8 @@ COPY --from=deps /app/tsconfig.json .
 COPY --from=deps /app/next-env.d.ts .
 COPY --from=deps /app/src/types/ ./src/types/
 COPY --from=deps /app/src/lib/ ./src/lib/
-
+# In both deps and builder stages
+COPY src/hooks/ ./src/hooks/
 # Copy application code
 COPY . .
 
