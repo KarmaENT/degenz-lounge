@@ -23,6 +23,5 @@
     "supabase": "^2.22.6",
     "vite": "^6.3.3",
   "socket.io-client": "^4.7.5"
-}
   }
 }
