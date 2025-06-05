@@ -1,9 +1,8 @@
 {
-  "name": "Degenz Lounge Dev Container",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "."
-  },
+  "name": "DeGeNz Lounge Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "frontend",
+  "workspaceFolder": "/app",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -12,7 +11,10 @@
         "ms-vscode.vscode-typescript-next",
         "github.vscode-pull-request-github",
         "formulahendry.auto-rename-tag",
-        "formulahendry.auto-close-tag"
+        "formulahendry.auto-close-tag",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
       ],
       "settings": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -22,19 +24,35 @@
         },
         "[typescript]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode"
-        }
+        },
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.python"
+        },
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
       }
     }
   },
-  "forwardPorts": [3000],
+  "forwardPorts": [3000, 8000, 5432, 6379],
   "portsAttributes": {
     "3000": {
-      "label": "Application",
+      "label": "Frontend (Next.js)",
       "onAutoForward": "openPreview"
+    },
+    "8000": {
+      "label": "Backend (FastAPI)",
+      "onAutoForward": "openPreview"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
     }
   },
-  "postCreateCommand": "npm install",
-  "remoteUser": "node",
+  "postCreateCommand": "npm install && pip install --no-cache-dir -r requirements.txt",
+  "remoteUser": "root",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}

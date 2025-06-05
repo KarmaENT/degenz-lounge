@@ -1,20 +1,38 @@
-# Use the official Node.js 20 slim image as the base
-FROM node:20-slim
+# Multi-stage build for frontend (Node.js) and backend (Python/FastAPI)
 
-# Set the working directory inside the container
+# Stage 1: Frontend (Node.js for React/Next.js)
+FROM node:20-slim AS frontend
 WORKDIR /app
-
-# Copy package.json and package-lock.json (if present) to leverage Docker cache
 COPY package*.json ./
-
-# Install dependencies
-RUN npm install --production
-
-# Copy the rest of the application code
+RUN npm install
 COPY . .
-
-# Expose port 3000 (assuming a web server or API for the marketplace)
 EXPOSE 3000
+CMD ["npm", "run", "dev"]
 
-# Define the command to run the application
-CMD ["node", "src/index.js"]
+# Stage 2: Backend (Python/FastAPI)
+FROM python:3.10-slim AS backend
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8000
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Stage 3: Development (combined for devcontainer)
+FROM python:3.10-slim AS development
+WORKDIR /app
+# Install Node.js and npm
+RUN apt-get update && apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install Python dependencies
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+# Install Node.js dependencies
+COPY package*.json ./
+RUN npm install
+# Copy all project files
+COPY . .
+# Expose ports for frontend and backend
+EXPOSE 3000 8000
